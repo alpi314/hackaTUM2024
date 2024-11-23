@@ -8,9 +8,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.1",
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
     "@heroicons/react": "^2.1.5",
+    "@mui/icons-material": "^6.1.8",
     "@mui/material": "^6.1.8",
     "@project-serum/anchor": "^0.26.0",
     "@radix-ui/react-toast": "^1.2.2",
@@ -22,6 +24,8 @@
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.95.5",
     "@tweenjs/tween.js": "^25.0.0",
+    "antd": "^5.22.2",
+    "antd-style": "^3.7.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "iframe-resizer-react": "^5.1.5",
