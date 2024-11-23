@@ -39,10 +39,10 @@ import {
 } from "@mui/material";
 
 const wallets = [new PhantomWalletAdapter()];
-// const programID = new PublicKey("48zQM2WJcVtJYyv2gf2PqsCYawgFkEW9ZqrT61DTAZ7J");
-// const network = "https://api.devnet.solana.com";
-const programID = new PublicKey(process.env.CONTRACT_PUBLIC_KEY);
-const network = process.env.SOLANA_NET;
+const programID = new PublicKey("48zQM2WJcVtJYyv2gf2PqsCYawgFkEW9ZqrT61DTAZ7J");
+const network = "https://devnet.helius-rpc.com/?api-key=ec39cc38-e55f-411b-98b1-019788078549";
+// const programID = new PublicKey(process.env.CONTRACT_PUBLIC_KEY);
+// const network = process.env.SOLANA_NET;
 const commitment = "processed";
 
 const theme = createTheme({
