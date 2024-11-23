@@ -27,16 +27,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
+          cache: npm
 
       - name: Install dependencies
-        run: yarn install
+        run: npm install
 
       - name: Build Next.js project
-        run: yarn build
+        run: npm run build
 
       - name: Export static files
-        run: yarn export
+        run: npm run export
         env:
           NEXT_PUBLIC_BASE_PATH: "/hackaTUM2024" # Set your GitHub Pages base path
         # Ensure the Next.js `next.config.js` has a `basePath` set for GitHub Pages.
@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: out # The output directory from `yarn export`
+          path: out # The output directory from `npm run export`
 
   # Deployment job
   deploy:
