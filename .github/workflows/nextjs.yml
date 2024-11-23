@@ -13,14 +13,23 @@ permissions:
 concurrency:
   group: "pages"
   cancel-in-progress: false
-
 jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
+    environment: github-pages # Add this line to link the secrets
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Debug secrets
+        run: |
+          echo "CONTRACT_PUBLIC_KEY=${{ secrets.CONTRACT_PUBLIC_KEY }}"
+          echo "SOLANA_NET=${{ secrets.SOLANA_NET }}"
+        env:
+          CONTRACT_PUBLIC_KEY: ${{ secrets.CONTRACT_PUBLIC_KEY }}
+          SOLANA_NET: ${{ secrets.SOLANA_NET }}
+
 
       - name: Install dependencies
         working-directory: frontend
@@ -46,7 +55,7 @@ jobs:
         working-directory: frontend
         run: npm run export
         env:
-          ONTRACT_PUBLIC_KEY: ${{ secrets.CONTRACT_PUBLIC_KEY }}
+          CONTRACT_PUBLIC_KEY: ${{ secrets.CONTRACT_PUBLIC_KEY }}
           SOLANA_NET: ${{ secrets.SOLANA_NET }}
           BASE_PATH: "/hackaTUM2024"
 
@@ -57,9 +66,7 @@ jobs:
 
   # Deployment job
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    environment: github-pages # Add this line for deployment as well
     runs-on: ubuntu-latest
     needs: build
     steps:
