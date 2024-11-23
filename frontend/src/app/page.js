@@ -1,7 +1,7 @@
 "use client";
-// pages/index.js
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import * as anchor from "@project-serum/anchor";
 import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
 import {
@@ -10,18 +10,23 @@ import {
   ConnectionProvider,
 } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
-import {
-  WalletModalProvider,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
-import dynamic from "next/dynamic";
 
 import idl from "./idl.json"; // Adjust the path if necessary
+
+// Dynamic imports for React-Leaflet and Wallet Adapter UI to avoid SSR issues
+const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton), { ssr: false });
+const WalletModalProvider = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletModalProvider), { ssr: false });
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
+
+// Import useMapEvents normally
+import { useMapEvents } from "react-leaflet";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
 import "leaflet/dist/leaflet.css";
 
-// Material-UI Imports
+// Material-UI imports
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   Container,
@@ -33,14 +38,7 @@ import {
   Typography,
 } from "@mui/material";
 
-// Dynamic imports for React-Leaflet (to avoid SSR issues)
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
-const useMapEvents = dynamic(() => import("react-leaflet").then((mod) => mod.useMapEvents), { ssr: false });
-
 const wallets = [new PhantomWalletAdapter()];
-
 const programID = new PublicKey("Egwieoi2FRVMJG9bh6pcggEDGQrBKGy1cHLZPo2hU7zk");
 const network = "https://api.devnet.solana.com";
 const commitment = "processed";
@@ -53,6 +51,7 @@ const theme = createTheme({
 });
 
 const App = () => {
+  const [isMounted, setIsMounted] = useState(false);
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfHash, setPdfHash] = useState("");
   const [latitude, setLatitude] = useState("");
@@ -71,6 +70,14 @@ const App = () => {
 
   const wallet = useWallet();
   const connection = new Connection(network, commitment);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null; // Prevent rendering until the component is mounted
+  }
 
   const provider = new anchor.AnchorProvider(connection, wallet, {
     preflightCommitment: commitment,
@@ -166,6 +173,7 @@ const App = () => {
     }
   };
 
+  // Define LocationMarker inside App
   const LocationMarker = () => {
     useMapEvents({
       click(e) {
@@ -242,6 +250,8 @@ const App = () => {
                     variant="contained"
                     color="primary"
                     fullWidth
+                    disableElevation
+                    disableRipple
                   >
                     Submit
                   </Button>
@@ -278,6 +288,8 @@ const App = () => {
               disabled={!canWithdraw}
               variant="contained"
               color="secondary"
+              disableElevation
+              disableRipple
             >
               Withdraw
             </Button>
