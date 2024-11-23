@@ -1,7 +1,7 @@
 "use client";
 // pages/index.js
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as anchor from "@project-serum/anchor";
 import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
 import {
@@ -14,13 +14,12 @@ import {
   WalletModalProvider,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import dynamic from "next/dynamic";
 
 import idl from "./idl.json"; // Adjust the path if necessary
 
 import "@solana/wallet-adapter-react-ui/styles.css";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 
 // Material-UI Imports
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -28,21 +27,17 @@ import {
   Container,
   Card,
   CardContent,
-  CardActions,
-  Typography,
+  Grid,
   TextField,
   Button,
-  Grid,
-  CircularProgress,
+  Typography,
 } from "@mui/material";
 
-// Fix for default marker icon issues in Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
-});
+// Dynamic imports for React-Leaflet (to avoid SSR issues)
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
+const useMapEvents = dynamic(() => import("react-leaflet").then((mod) => mod.useMapEvents), { ssr: false });
 
 const wallets = [new PhantomWalletAdapter()];
 
