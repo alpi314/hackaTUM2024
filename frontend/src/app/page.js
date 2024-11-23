@@ -27,9 +27,18 @@ const WalletModalProvider = dynamic(
     ),
   { ssr: false }
 );
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
 
 import { useMapEvents } from "react-leaflet";
 
@@ -53,9 +62,16 @@ import {
   ListItemText,
   Divider,
   IconButton,
+  Box,
+  Paper,
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import DownloadIcon from '@mui/icons-material/Download';
+import SearchIcon from '@mui/icons-material/Search';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import InputAdornment from '@mui/material/InputAdornment';
+import { grey } from "@mui/material/colors";
 
 const wallets = [new PhantomWalletAdapter()];
 const programID = new PublicKey("48zQM2WJcVtJYyv2gf2PqsCYawgFkEW9ZqrT61DTAZ7J");
@@ -67,7 +83,7 @@ const theme = createTheme({
     primary: { main: "#6a1b9a" }, // Purple accent
     secondary: { main: "#424242" }, // Dark gray
     background: {
-      default: "#f5f5f5", // Light gray background
+      default: "#f0f2f5", // Light gray background
       paper: "#ffffff", // White cards
     },
     text: {
@@ -77,11 +93,21 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: "Roboto, Arial, sans-serif",
+    h4: {
+      fontWeight: 700,
+      marginBottom: "20px",
+    },
     h5: {
       fontWeight: 600,
     },
     h6: {
       fontWeight: 500,
+    },
+    subtitle1: {
+      fontWeight: 500,
+    },
+    body1: {
+      lineHeight: 1.6,
     },
     button: {
       textTransform: "none",
@@ -91,8 +117,9 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-          borderRadius: "12px",
+          boxShadow: "0 4px 25px rgba(0, 0, 0, 0.1)",
+          borderRadius: "16px",
+          padding: "20px",
         },
       },
     },
@@ -112,11 +139,16 @@ const theme = createTheme({
         },
       },
     },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+        },
+      },
+    },
   },
 });
-
-// Removed the unused variable
-// let ext_con_confirm = false;
 
 const App = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -132,39 +164,104 @@ const App = () => {
   const [canWithdraw, setCanWithdraw] = useState(false);
   const [dataAccountPDA, setDataAccountPDA] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState({
-    lat: 51.505,
-    lng: -0.09,
+    lat: 48.2632, // Example coordinates for Dingolfing
+    lng: 12.5250,
   });
 
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [listings, setListings] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [filteredListings, setFilteredListings] = useState([]); // State for filtered listings
 
   const wallet = useWallet();
   const connection = new Connection(network, commitment);
 
   useEffect(() => {
     setIsMounted(true);
-    // Mock listings for Dingolfing
+    // Expanded mock listings for Dingolfing with exact addresses and precise coordinates
     setListings([
       {
         id: 1,
-        price: "180.000 EUR",
+        price: "(FOR SALE) 180.000 EUR",
         location: "Dingolfing, Bavaria",
+        address: "Musterstraße 1, 94469 Dingolfing, Germany",
         description: "Beautiful Home available.",
         descriptionPdf: "/pdfs/listing1-description.pdf",
         migrationProofPdf: "/pdfs/listing1-proof.pdf",
+        coordinates: { lat: 48.2632, lng: 12.5250 },
+        email: "contact1@example.com",
+        phone: "+49 89 123456",
       },
       {
         id: 2,
-        price: "250.000 EUR",
+        price: "(FOR SALE) 250.000 EUR",
         location: "Dingolfing, Bavaria",
+        address: "Beispielweg 5, 94469 Dingolfing, Germany",
         description: "Prime location for your family.",
         descriptionPdf: "/pdfs/listing2-description.pdf",
         migrationProofPdf: "/pdfs/listing2-proof.pdf",
+        coordinates: { lat: 48.2645, lng: 12.5275 },
+        email: "contact2@example.com",
+        phone: "+49 89 654321",
+      },
+      {
+        id: 3,
+        price: "(FOR SALE) 300.000 EUR",
+        location: "Dingolfing, Bavaria",
+        address: "Villaweg 10, 94469 Dingolfing, Germany",
+        description: "Spacious villa with modern amenities.",
+        descriptionPdf: "/pdfs/listing3-description.pdf",
+        migrationProofPdf: "/pdfs/listing3-proof.pdf",
+        coordinates: { lat: 48.2650, lng: 12.5300 },
+        email: "contact3@example.com",
+        phone: "+49 89 112233",
+      },
+      {
+        id: 4,
+        price: "(FOR SALE) 150.000 EUR",
+        location: "Dingolfing, Bavaria",
+        address: "Altstadtgasse 15, 94469 Dingolfing, Germany",
+        description: "Cozy apartment close to city center.",
+        descriptionPdf: "/pdfs/listing4-description.pdf",
+        migrationProofPdf: "/pdfs/listing4-proof.pdf",
+        coordinates: { lat: 48.2620, lng: 12.5230 },
+        email: "contact4@example.com",
+        phone: "+49 89 445566",
+      },
+      {
+        id: 5,
+        price: "(RENTAL) 600 EUR",
+        location: "Dingolfing, Bavaria",
+        address: "Parkstraße 20, 94469 Dingolfing, Germany",
+        description: "Modern townhouse with garden.",
+        descriptionPdf: "/pdfs/listing5-description.pdf",
+        migrationProofPdf: "/pdfs/listing5-proof.pdf",
+        coordinates: { lat: 48.2660, lng: 12.5350 },
+        email: "contact5@example.com",
+        phone: "+49 89 778899",
       },
     ]);
   }, []);
+
+  // Initialize filtered listings
+  useEffect(() => {
+    setFilteredListings(listings);
+  }, [listings]);
+
+  // Handle search query changes
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      // If search query is empty, show all listings
+      setFilteredListings(listings);
+    } else {
+      // Filter listings based on location
+      const filtered = listings.filter((listing) =>
+        listing.location.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredListings(filtered);
+    }
+  }, [searchQuery, listings]);
 
   if (!isMounted) {
     return null;
@@ -258,7 +355,7 @@ const App = () => {
       setWithdrawLogs("Withdrawal transaction successful!");
 
       // Set success dialog message
-      setDialogMessage("withdrawal successful, your RWRD has been reserved!");
+      setDialogMessage("Withdrawal successful, your RWRD has been reserved!");
       setOpenDialog(true);
     } catch (error) {
       console.error("Withdrawal transaction failed:", error);
@@ -292,7 +389,7 @@ const App = () => {
   };
 
   return (
-    <Container maxWidth="md" style={{ marginTop: "40px", marginBottom: "40px" }}>
+    <Container maxWidth="lg" sx={{ marginTop: "40px", marginBottom: "40px" }}>
       <WalletModalProvider>
         <Grid container justifyContent="flex-end">
           <WalletMultiButton />
@@ -301,14 +398,16 @@ const App = () => {
 
       {wallet.connected ? (
         <>
-          <Card variant="outlined" style={{ marginTop: "30px" }}>
+          {/* Migrate Advert Section */}
+          <Card variant="outlined" sx={{ marginTop: "30px" }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
                 Migrate Advert
               </Typography>
-              <form onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
+              <Box component="form" onSubmit={handleSubmit} noValidate>
+                <Grid container spacing={4}>
+                  {/* PDF Upload */}
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       variant="outlined"
@@ -322,28 +421,9 @@ const App = () => {
                       required
                     />
                   </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      value={`Lat: ${latitude}, Lng: ${longitude}`}
-                      label="Selected Location"
-                      InputProps={{ readOnly: true }}
-                    />
-                    <div style={{ height: "400px", width: "100%", marginTop: "15px", borderRadius: "8px", overflow: "hidden" }}>
-                      <MapContainer
-                        center={selectedLocation}
-                        zoom={13}
-                        style={{ height: "100%", width: "100%" }}
-                      >
-                        <TileLayer
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                        <LocationMarker />
-                      </MapContainer>
-                    </div>
-                  </Grid>
-                  <Grid item xs={12}>
+
+                  {/* Price Input */}
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       variant="outlined"
@@ -355,6 +435,35 @@ const App = () => {
                       inputProps={{ min: "0", step: "0.01" }}
                     />
                   </Grid>
+
+                  {/* Selected Location */}
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      value={`Lat: ${latitude}, Lng: ${longitude}`}
+                      label="Selected Location"
+                      InputProps={{ readOnly: true }}
+                    />
+                  </Grid>
+
+                  {/* Map */}
+                  <Grid item xs={12}>
+                    <Paper elevation={3} sx={{ height: "400px", borderRadius: "12px", overflow: "hidden" }}>
+                      <MapContainer
+                        center={selectedLocation}
+                        zoom={13}
+                        style={{ height: "100%", width: "100%" }}
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <LocationMarker />
+                      </MapContainer>
+                    </Paper>
+                  </Grid>
+
+                  {/* Submit Button */}
                   <Grid item xs={12}>
                     <Button
                       type="submit"
@@ -362,35 +471,43 @@ const App = () => {
                       color="primary"
                       fullWidth
                       disableElevation
+                      size="large"
                     >
                       Submit
                     </Button>
                   </Grid>
                 </Grid>
-              </form>
+              </Box>
+
+              {/* Transaction Logs */}
               {logs && (
-                <Typography style={{ marginTop: "20px" }}>
-                  <strong>Status:</strong> {logs}
-                </Typography>
+                <Box sx={{ marginTop: "20px" }}>
+                  <Typography variant="body1" color="text.primary">
+                    <strong>Status:</strong> {logs}
+                  </Typography>
+                </Box>
               )}
               {txSignature && (
-                <Typography style={{ marginTop: "10px" }}>
-                  <strong>Transaction Link:</strong>{" "}
-                  <a
-                    href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
-                  >
-                    View on Solana Explorer
-                  </a>
-                </Typography>
+                <Box sx={{ marginTop: "10px" }}>
+                  <Typography variant="body1" color="text.primary">
+                    <strong>Transaction Link:</strong>{" "}
+                    <a
+                      href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: theme.palette.primary.main, textDecoration: 'none' }}
+                    >
+                      View on Solana Explorer
+                    </a>
+                  </Typography>
+                </Box>
               )}
             </CardContent>
           </Card>
 
+          {/* Withdraw Deposit Section */}
           {txSignature && (
-            <Card variant="outlined" style={{ marginTop: "30px" }}>
+            <Card variant="outlined" sx={{ marginTop: "30px" }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Withdraw Deposit
@@ -401,13 +518,17 @@ const App = () => {
                   variant="contained"
                   color="secondary"
                   disableElevation
-                  style={{ marginBottom: "10px" }}
+                  sx={{ marginBottom: "10px" }}
                 >
                   Withdraw
                 </Button>
-                {withdrawLogs && <Typography>{withdrawLogs}</Typography>}
+                {withdrawLogs && (
+                  <Typography variant="body1" color="text.primary">
+                    {withdrawLogs}
+                  </Typography>
+                )}
                 {withdrawTxSignature && (
-                  <Typography>
+                  <Typography variant="body1" color="text.primary">
                     <strong>Withdrawal Transaction Link:</strong>{" "}
                     <a
                       href={`https://explorer.solana.com/tx/${withdrawTxSignature}?cluster=devnet`}
@@ -423,16 +544,160 @@ const App = () => {
             </Card>
           )}
         </>
-      ) : (
-        <Card variant="outlined" style={{ marginTop: "30px", padding: "20px" }}>
-          <CardContent>
-            <Typography variant="h6" align="center">
-              Please connect your wallet to submit data.
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
+      ) : null}
 
+      {/* Search Bar for Listings */}
+      <Card variant="outlined" sx={{ marginTop: "30px", padding: "20px" }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Search Listings
+          </Typography>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Enter location (e.g., Munich, Berlin)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+          {/* Note: The search functionality is mocked and filters the displayed listings based on user input */}
+          <Typography variant="body2" sx={{ marginTop: "10px", color: grey[600] }}>
+            {searchQuery.trim() === ""
+              ? "Showing all listings."
+              : `Showing listings for "${searchQuery}".`}
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Active Listings Section */}
+      <Card variant="outlined" sx={{ marginTop: "40px" }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Active Listings {searchQuery.trim() !== "" && `in "${searchQuery}"`}
+          </Typography>
+          {filteredListings.length > 0 ? (
+            <List>
+              {filteredListings.map((listing) => (
+                <React.Fragment key={listing.id}>
+                  <ListItem alignItems="flex-start" disableGutters>
+                    <Grid container spacing={2}>
+                      {/* Listing Details */}
+                      <Grid item xs={12} md={6}>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1" color="text.primary">
+                              {listing.location} - {listing.price}
+                            </Typography>
+                          }
+                          secondary={
+                            <div>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                component="div" // Changed to prevent <p> nesting
+                              >
+                                <strong>Address:</strong> {listing.address}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ marginTop: "5px" }}
+                                component="div" // Changed to prevent <p> nesting
+                              >
+                                {listing.description}
+                              </Typography>
+                              {/* Contact Information */}
+                              <Box sx={{ display: "flex", alignItems: "center", marginTop: "10px" }}>
+                                <EmailIcon fontSize="small" color="action" />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ marginLeft: "5px", marginRight: "15px" }}
+                                  component="span" // Changed to prevent <p> nesting
+                                >
+                                  {listing.email}
+                                </Typography>
+                                <PhoneIcon fontSize="small" color="action" />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ marginLeft: "5px" }}
+                                  component="span" // Changed to prevent <p> nesting
+                                >
+                                  {listing.phone}
+                                </Typography>
+                              </Box>
+                            </div>
+                          }
+                        />
+                        {/* Download Buttons */}
+                        <Box sx={{ marginTop: "10px" }}>
+                          <IconButton
+                            aria-label="download description"
+                            href={listing.descriptionPdf}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            color="primary"
+                          >
+                            <DownloadIcon />
+                          </IconButton>
+                          <IconButton
+                            aria-label="download migration proof"
+                            href={listing.migrationProofPdf}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            color="primary"
+                          >
+                            <DownloadIcon />
+                          </IconButton>
+                        </Box>
+                      </Grid>
+                      {/* Listing Map */}
+                      <Grid item xs={12} md={6}>
+                        <Paper elevation={3} sx={{ height: "200px", borderRadius: "12px", overflow: "hidden" }}>
+                          <MapContainer
+                            center={listing.coordinates}
+                            zoom={15}
+                            style={{ height: "100%", width: "100%" }}
+                            dragging={false}
+                            zoomControl={false}
+                            doubleClickZoom={false}
+                            scrollWheelZoom={false}
+                            touchZoom={false}
+                          >
+                            <TileLayer
+                              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                            <Marker position={listing.coordinates}></Marker>
+                          </MapContainer>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
+                  <Divider component="li" />
+                </React.Fragment>
+              ))}
+            </List>
+          ) : (
+            <Typography variant="body1" color="text.secondary">
+              No listings found for "{searchQuery}".
+            </Typography>
+          )}
+          <Typography variant="body2" sx={{ marginTop: "15px", color: grey[600] }}>
+            {searchQuery.trim() === ""
+              ? "Currently showing listings for Dingolfing. Search for listings in other locations soon!"
+              : "Currently showing filtered results based on your search."}
+          </Typography>
+        </CardContent>
+      </Card>
+
+      {/* Withdrawal Status Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Withdrawal Status</DialogTitle>
         <DialogContent>
@@ -445,60 +710,8 @@ const App = () => {
         </DialogActions>
       </Dialog>
 
-      <Card variant="outlined" style={{ marginTop: "40px" }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Active Listings in Dingolfing
-          </Typography>
-          <List>
-            {listings.map((listing) => (
-              <React.Fragment key={listing.id}>
-                <ListItem alignItems="flex-start" secondaryAction={
-                  <div>
-                    <IconButton
-                      edge="end"
-                      aria-label="download description"
-                      href={listing.descriptionPdf}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      color="primary"
-                    >
-                      <DownloadIcon />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="download migration proof"
-                      href={listing.migrationProofPdf}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      color="primary"
-                    >
-                      <DownloadIcon />
-                    </IconButton>
-                  </div>
-                }>
-                  <ListItemText
-                    primary={
-                      <Typography variant="subtitle1" color="text.primary">
-                        {listing.location} - {listing.price}
-                      </Typography>
-                    }
-                    secondary={
-                      <Typography variant="body2" color="text.secondary">
-                        {listing.description}
-                      </Typography>
-                    }
-                  />
-                </ListItem>
-                <Divider component="li" />
-              </React.Fragment>
-            ))}
-          </List>
-          <Typography variant="body2" style={{ marginTop: "15px", color: theme.palette.text.secondary }}>
-            Currently showing listings for Dingolfing. Search for listings in other locations soon!
-          </Typography>
-        </CardContent>
-      </Card>
+      {/* Show Listings Even When Wallet is Not Connected */}
+      {/* The "Active Listings" section is already outside the wallet.connected condition */}
     </Container>
   );
 };
