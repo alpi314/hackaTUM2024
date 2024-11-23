@@ -26,15 +26,29 @@ jobs:
         working-directory: frontend
         run: npm install
 
+      - name: Print environment variables
+        run: |
+          echo "CONTRACT_PUBLIC_KEY=${{ secrets.CONTRACT_PUBLIC_KEY }}"
+          echo "SOLANA_NET=${{ secrets.SOLANA_NET }}"
+        env:
+          CONTRACT_PUBLIC_KEY: ${{ secrets.CONTRACT_PUBLIC_KEY }}
+          SOLANA_NET: ${{ secrets.SOLANA_NET }}
+
       - name: Build Next.js project
         working-directory: frontend
         run: npm run build
+        env:
+          CONTRACT_PUBLIC_KEY: ${{ secrets.CONTRACT_PUBLIC_KEY }}
+          SOLANA_NET: ${{ secrets.SOLANA_NET }}
+          BASE_PATH: "/hackaTUM2024"
 
       - name: Export static files
         working-directory: frontend
-        run: npm run build
+        run: npm run export
         env:
-          NEXT_PUBLIC_BASE_PATH: "/hackaTUM2024"
+          ONTRACT_PUBLIC_KEY: ${{ secrets.CONTRACT_PUBLIC_KEY }}
+          SOLANA_NET: ${{ secrets.SOLANA_NET }}
+          BASE_PATH: "/hackaTUM2024"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
