@@ -75,7 +75,8 @@ import { grey } from "@mui/material/colors";
 
 const wallets = [new PhantomWalletAdapter()];
 const programID = new PublicKey("48zQM2WJcVtJYyv2gf2PqsCYawgFkEW9ZqrT61DTAZ7J");
-const network = "https://devnet.helius-rpc.com/?api-key=ec39cc38-e55f-411b-98b1-019788078549";
+// const network = "https://devnet.helius-rpc.com/?api-key=ec39cc38-e55f-411b-98b1-019788078549";
+const network = "https://devnet.helius-rpc.com/?api-key=6cee5706-5f3c-4353-92fe-14329107751e";
 const commitment = "processed";
 
 const theme = createTheme({
@@ -157,6 +158,8 @@ const App = () => {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [price, setPrice] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [logs, setLogs] = useState("");
   const [txSignature, setTxSignature] = useState("");
   const [withdrawLogs, setWithdrawLogs] = useState("");
@@ -435,7 +438,30 @@ const App = () => {
                       inputProps={{ min: "0", step: "0.01" }}
                     />
                   </Grid>
-
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      // type="number"
+                      label="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      // required
+                      // inputProps={{ min: "0", step: "0.01" }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      // type="number"
+                      label="Phone Number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      // required
+                      // inputProps={{ min: "0", step: "0.01" }}
+                    />
+                  </Grid>
                   {/* Selected Location */}
                   <Grid item xs={12}>
                     <TextField
