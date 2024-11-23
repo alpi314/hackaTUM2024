@@ -38,7 +38,7 @@ jobs:
       - name: Export static files
         run: yarn export
         env:
-          NEXT_PUBLIC_BASE_PATH: "/<repository-name>" # Set your GitHub Pages base path
+          NEXT_PUBLIC_BASE_PATH: "/hackaTUM2024" # Set your GitHub Pages base path
         # Ensure the Next.js `next.config.js` has a `basePath` set for GitHub Pages.
 
       - name: Upload artifact
