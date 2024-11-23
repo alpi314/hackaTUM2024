@@ -115,7 +115,8 @@ const theme = createTheme({
   },
 });
 
-let ext_con_confirm = false;
+// Removed the unused variable
+// let ext_con_confirm = false;
 
 const App = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -252,20 +253,18 @@ const App = () => {
           systemProgram: SystemProgram.programId,
         })
         .rpc({ commitment: "confirmed", preflightCommitment: "confirmed" });
-  
+
       setWithdrawTxSignature(tx);
       setWithdrawLogs("Withdrawal transaction successful!");
-  
-      if (ext_con_confirm) {
-        setDialogMessage("RWRD tokens have been successfully reserved for you!");
-      } else {
-        setDialogMessage(
-          "There were more objectors than approvers for the migration. Withdrawal and minting cannot be done until the community is convinced. Please try to start another migration process."
-        );
-      }
+
+      // Set success dialog message
+      setDialogMessage("withdrawal successful, your RWRD has been reserved!");
       setOpenDialog(true);
     } catch (error) {
+      console.error("Withdrawal transaction failed:", error);
       setWithdrawLogs(`Withdrawal transaction failed: ${error.message}`);
+
+      // Set failure dialog message
       setDialogMessage(
         "There were more objectors than approvers for the migration. Withdrawal and minting cannot be done until the community is convinced. Please try to start another migration process."
       );
