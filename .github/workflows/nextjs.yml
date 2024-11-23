@@ -27,12 +27,15 @@ jobs:
         run: cd frontend
 
       - name: Install dependencies
+        working-directory: frontend
         run: npm install
 
       - name: Build Next.js project
+        working-directory: frontend
         run: npm run build
 
       - name: Export static files
+        working-directory: frontend
         run: npm run export
         env:
           NEXT_PUBLIC_BASE_PATH: "/<repository-name>" # Set your GitHub Pages base path
