@@ -11,23 +11,19 @@ import {
 } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
 
-import idl from "./idl.json"; // Adjust the path if necessary
+import idl from "./idl.json";
 
-// Dynamic imports for React-Leaflet and Wallet Adapter UI to avoid SSR issues
 const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton), { ssr: false });
 const WalletModalProvider = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletModalProvider), { ssr: false });
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
 const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
 
-// Import useMapEvents normally
 import { useMapEvents } from "react-leaflet";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
 import "leaflet/dist/leaflet.css";
 
-// Material-UI imports
-import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   Container,
   Card,
@@ -36,13 +32,20 @@ import {
   TextField,
   Button,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
 } from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 const wallets = [new PhantomWalletAdapter()];
 const programID = new PublicKey("48zQM2WJcVtJYyv2gf2PqsCYawgFkEW9ZqrT61DTAZ7J");
 const network = "https://devnet.helius-rpc.com/?api-key=ec39cc38-e55f-411b-98b1-019788078549";
-// const programID = new PublicKey(process.env.CONTRACT_PUBLIC_KEY);
-// const network = process.env.SOLANA_NET;
 const commitment = "processed";
 
 const theme = createTheme({
@@ -50,7 +53,12 @@ const theme = createTheme({
     primary: { main: "#1976d2" },
     secondary: { main: "#dc004e" },
   },
+  typography: {
+    fontFamily: "Roboto, Arial, sans-serif",
+  },
 });
+
+let ext_con_confirm = false;
 
 const App = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -70,15 +78,38 @@ const App = () => {
     lng: -0.09,
   });
 
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [listings, setListings] = useState([]);
+
   const wallet = useWallet();
   const connection = new Connection(network, commitment);
 
   useEffect(() => {
     setIsMounted(true);
+    // Mock listings for Dingolfing
+    setListings([
+      {
+        id: 1,
+        price: "180,000 EUR",
+        address: "Bahnhofstraße 15, Dingolfing, Bavaria",
+        description: "Beautiful home with spacious garden and nearby amenities.",
+        lat: 48.6391,
+        lng: 12.4934,
+      },
+      {
+        id: 2,
+        price: "250,000 EUR",
+        address: "Marktplatz 10, Dingolfing, Bavaria",
+        description: "Prime location in the city center, ideal for families.",
+        lat: 48.6418,
+        lng: 12.5007,
+      },
+    ]);
   }, []);
 
   if (!isMounted) {
-    return null; // Prevent rendering until the component is mounted
+    return null;
   }
 
   const provider = new anchor.AnchorProvider(connection, wallet, {
@@ -109,73 +140,10 @@ const App = () => {
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!pdfHash || !latitude || !longitude || !price) {
-      alert("All fields are required.");
-      return;
-    }
-
-    try {
-      const [dataAccountPDA, bump] = await PublicKey.findProgramAddress(
-        [Buffer.from("data_account"), wallet.publicKey.toBuffer()],
-        programID
-      );
-      setDataAccountPDA(dataAccountPDA);
-
-      const depositAmount = 0.1 * anchor.web3.LAMPORTS_PER_SOL;
-
-      const tx = await program.methods
-        .submitData(
-          pdfHash,
-          latitude,
-          longitude,
-          new anchor.BN(price),
-          new anchor.BN(depositAmount)
-        )
-        .accounts({
-          user: wallet.publicKey,
-          dataAccount: dataAccountPDA,
-          systemProgram: SystemProgram.programId,
-        })
-        .signers([])
-        .rpc({ commitment: "confirmed", preflightCommitment: "confirmed" });
-
-      setTxSignature(tx);
-      setLogs("Transaction successful!");
-      console.log("Transaction signature:", tx);
-
-      setTimeout(() => {
-        setCanWithdraw(true);
-      }, 10000);
-    } catch (error) {
-      console.error("Transaction failed:", error);
-      setLogs(`Transaction failed: ${error.message}`);
-    }
+  const downloadProof = (listingId) => {
+    alert(`Downloading description and proof for listing ${listingId}`);
   };
 
-  const handleWithdraw = async () => {
-    try {
-      const tx = await program.methods
-        .withdraw()
-        .accounts({
-          user: wallet.publicKey,
-          dataAccount: dataAccountPDA,
-          systemProgram: SystemProgram.programId,
-        })
-        .rpc({ commitment: "confirmed", preflightCommitment: "confirmed" });
-
-      setWithdrawTxSignature(tx);
-      setWithdrawLogs("Withdrawal transaction successful!");
-      console.log("Withdrawal transaction signature:", tx);
-    } catch (error) {
-      console.error("Withdrawal transaction failed:", error);
-      setWithdrawLogs(`Withdrawal transaction failed: ${error.message}`);
-    }
-  };
-
-  // Define LocationMarker inside App
   const LocationMarker = () => {
     useMapEvents({
       click(e) {
@@ -203,14 +171,14 @@ const App = () => {
             <Typography variant="h5" gutterBottom>
               Migrate Advert
             </Typography>
-            <form onSubmit={handleSubmit}>
+            <form>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
                     variant="outlined"
                     type="file"
-                    label="Upload PDF"
+                    label="Upload Description & Proof of Migration"
                     InputLabelProps={{ shrink: true }}
                     onChange={handleFileUpload}
                   />
@@ -241,76 +209,59 @@ const App = () => {
                     fullWidth
                     variant="outlined"
                     type="number"
-                    label="Price (in SOL)"
+                    label="Price (in EUR)"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                   />
                 </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    disableElevation
-                    disableRipple
-                  >
-                    Submit
-                  </Button>
-                </Grid>
               </Grid>
             </form>
-            {logs && <Typography style={{ marginTop: "10px" }}>{logs}</Typography>}
-            {txSignature && (
-              <Typography style={{ marginTop: "10px" }}>
-                Transaction Signature:{" "}
-                <a
-                  href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {txSignature}
-                </a>
-              </Typography>
-            )}
           </CardContent>
         </Card>
       ) : (
         <Typography variant="body1" style={{ marginTop: "20px" }}>
-          Please connect your wallet to submit data.
+          Please connect your wallet to migrate a new advert.
         </Typography>
       )}
 
-      {txSignature && (
-        <Card variant="outlined" style={{ marginTop: "20px" }}>
-          <CardContent>
-            <Typography variant="h6">Withdraw Deposit</Typography>
-            <Button
-              onClick={handleWithdraw}
-              disabled={!canWithdraw}
-              variant="contained"
-              color="secondary"
-              disableElevation
-              disableRipple
-            >
-              Withdraw
-            </Button>
-            {withdrawLogs && <Typography>{withdrawLogs}</Typography>}
-            {withdrawTxSignature && (
-              <Typography>
-                Withdrawal Transaction Signature:{" "}
-                <a
-                  href={`https://explorer.solana.com/tx/${withdrawTxSignature}?cluster=devnet`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+      <Card variant="outlined" style={{ marginTop: "20px" }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Active Listings in Dingolfing
+          </Typography>
+          {listings.map((listing) => (
+            <Card variant="outlined" style={{ marginBottom: "15px" }} key={listing.id}>
+              <CardContent>
+                <Typography variant="h6">{listing.address}</Typography>
+                <Typography variant="body1">
+                  <strong>Price:</strong> {listing.price}
+                </Typography>
+                <Typography variant="body2">{listing.description}</Typography>
+                <div style={{ height: "200px", width: "100%", marginTop: "10px" }}>
+                  <MapContainer
+                    center={[listing.lat, listing.lng]}
+                    zoom={13}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={[listing.lat, listing.lng]} />
+                  </MapContainer>
+                </div>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  style={{ marginTop: "10px" }}
+                  onClick={() => downloadProof(listing.id)}
                 >
-                  {withdrawTxSignature}
-                </a>
-              </Typography>
-            )}
-          </CardContent>
-        </Card>
-      )}
+                  Download Description & Proof
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </CardContent>
+      </Card>
     </Container>
   );
 };
