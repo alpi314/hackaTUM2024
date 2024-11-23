@@ -647,15 +647,6 @@ const App = () => {
                           >
                             <DownloadIcon />
                           </IconButton>
-                          <IconButton
-                            aria-label="download migration proof"
-                            href={listing.migrationProofPdf}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            color="primary"
-                          >
-                            <DownloadIcon />
-                          </IconButton>
                         </Box>
                       </Grid>
                       {/* Listing Map */}
