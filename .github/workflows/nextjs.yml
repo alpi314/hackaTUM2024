@@ -1,4 +1,4 @@
-# GitHub Actions workflow for deploying a Next.js site to GitHub Pages
+# GitHub Actions workflow for deploying a Next.js site to GitHub Pages with npm
 name: Deploy Next.js site to GitHub Pages
 
 on:
@@ -29,22 +29,28 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Navigate to frontend
+        run: cd frontend
+
       - name: Install dependencies
+        working-directory: ./frontend
         run: npm install
 
       - name: Build Next.js project
+        working-directory: ./frontend
         run: npm run build
 
       - name: Export static files
+        working-directory: ./frontend
         run: npm run export
         env:
-          NEXT_PUBLIC_BASE_PATH: "/hackaTUM2024" # Set your GitHub Pages base path
+          NEXT_PUBLIC_BASE_PATH: "/<repository-name>" # Set your GitHub Pages base path
         # Ensure the Next.js `next.config.js` has a `basePath` set for GitHub Pages.
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: out # The output directory from `npm run export`
+          path: frontend/out # The output directory from `npm run export`
 
   # Deployment job
   deploy:
