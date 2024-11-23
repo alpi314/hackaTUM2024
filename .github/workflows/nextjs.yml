@@ -53,7 +53,7 @@ jobs:
 
       - name: Export static files
         working-directory: frontend
-        run: npm run export
+        run: npm run build
         env:
           CONTRACT_PUBLIC_KEY: ${{ secrets.CONTRACT_PUBLIC_KEY }}
           SOLANA_NET: ${{ secrets.SOLANA_NET }}
