@@ -63,12 +63,12 @@ Our solution consists of several components:
 ## 🗂️ Project Structure
 
 - **frontend**: Web3-enabled frontend application connecting users' wallets.
-- **smart-contracts**: Contains various smart contracts:
+- **smart_contracts**: Contains various smart contracts:
   - Basic contracts for deployment testing.
   - Contracts for temporarily storing and returning deposited amounts.
   - Advanced contracts for minting and reward generation.
 - **token**: Stores assets and metadata in raw format for Solana blockchain compatibility.
-- **playgrounds**: Experimental repositories used for testing and prototyping Solana development concepts.
+- **playground**: Experimental repositories used for testing and prototyping Solana development concepts.
 
 ---
 
