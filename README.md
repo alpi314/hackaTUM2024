@@ -81,6 +81,11 @@ Our solution consists of several components:
    npm start
     ```
 
+### 🐳 Docker Setup for Deployment
+
+In the root of the GitHub repository, you'll find Docker files and a `docker-compose.yml` configuration that streamline the deployment process. These are designed to work alongside a Traefik router, enabling you to host and manage a Solana RPC node via your own domain. This setup is particularly useful for testing across multiple computers when you want to avoid relying on the Solana Devnet. Additionally, there is a separate Docker configuration for deploying the frontend (FE), ensuring a seamless and consistent environment for both the backend and frontend components of the project.
+
+
 ## 🛡️ License
 
 This project is licensed under the [MIT License](LICENSE).

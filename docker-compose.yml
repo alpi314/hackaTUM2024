@@ -1,0 +1,14 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fe
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fe.rule=Host(`fe.yourdomain.com`)"
+      - "traefik.http.routers.fe.tls=true"
+      - "traefik.http.routers.fe.tls.certresolver=traefik-letsencrypt"
+      - "traefik.http.services.fe.loadbalancer.server.port=3000"
+    network_mode: traefik
